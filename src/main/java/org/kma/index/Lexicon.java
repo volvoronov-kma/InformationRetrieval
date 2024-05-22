@@ -5,10 +5,7 @@ import org.kma.document.Document;
 import org.kma.processing.Tokenizer;
 
 import java.io.*;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -63,11 +60,11 @@ public class Lexicon {
     public Map<String, Integer> getSortedTermFrequencies() {
         return getTermFrequencies().entrySet()
                 .stream()
-                .sorted(Map.Entry.comparingByValue())
+                .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         Map.Entry::getValue,
-                        (e1, e2) -> e2,
+                        (e1, e2) -> e1,
                         LinkedHashMap::new
                 ));
 
