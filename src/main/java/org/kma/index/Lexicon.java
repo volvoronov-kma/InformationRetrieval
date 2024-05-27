@@ -50,11 +50,8 @@ public class Lexicon {
     }
 
     public void addDocument(Document doc) {
-        // logger.info("Adding document: " + doc.getDocumentId());
         corpus.addDocument(doc);
         processDocument(doc);
-        // logger.info("Finished processing document: " + doc.getDocumentId());
-
     }
 
     public Map<String, Integer> getSortedTermFrequencies() {
