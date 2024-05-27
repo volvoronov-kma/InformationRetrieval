@@ -3,6 +3,7 @@ package org.kma;
 import org.kma.document.Corpus;
 import org.kma.document.Document;
 import org.kma.document.reading.TxtDocumentReader;
+import org.kma.index.IncidenceMatrix;
 import org.kma.index.InvertedIndex;
 import org.kma.processing.CoreNlpTokenizer;
 
@@ -17,11 +18,34 @@ public class Main {
 
         File dir = new File("src/main/resources/documents");
         try {
+            long start = System.currentTimeMillis();
+
             List<Document> docs = reader.readAll(Arrays.stream(Objects.requireNonNull(dir.listFiles())).toList());
             index.addDocuments(docs);
+
+            long end = System.currentTimeMillis();
+            System.out.println("Total time (index): " + (end - start) + "ms");
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        try {
+            long start = System.currentTimeMillis();
+
+            List<Document> docs = reader.readAll(Arrays.stream(Objects.requireNonNull(dir.listFiles())).toList());
+            Corpus corpus = new Corpus();
+            corpus.addDocuments(docs);
+            IncidenceMatrix matrix = new IncidenceMatrix(corpus, new CoreNlpTokenizer());
+            matrix.getIncidenceMatrix();
+
+            long end = System.currentTimeMillis();
+            System.out.println("Total time (matrix): " + (end - start) + "ms");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
         System.out.println("Finished!");
     }
 }
