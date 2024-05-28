@@ -28,7 +28,8 @@ public class InvertedIndex implements SearchStructure {
     @Override
     public Set<UUID> findByTerm(String term) {
         term = tokenizer.normalize(term);
-        return postings.getOrDefault(term, new HashSet<>());
+        var uuids = postings.getOrDefault(term, new HashSet<>());
+        return new HashSet<>(uuids);
     }
     
     @Override
