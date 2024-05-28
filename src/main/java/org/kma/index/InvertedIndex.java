@@ -4,6 +4,9 @@ import org.kma.document.Corpus;
 import org.kma.document.Document;
 import org.kma.processing.Tokenizer;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -43,6 +46,24 @@ public class InvertedIndex implements SearchStructure {
     public void addDocument(Document doc) {
         corpus.addDocument(doc);
         processDocument(doc);
+    }
+
+    public void saveToCsv(String filePath) {
+        Map<String, HashSet<UUID>> map = this.postings;
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            // Write the CSV headers
+            writer.write("Term,Postings");
+            writer.newLine();
+
+            // Write the key-value pairs
+            for (Map.Entry<String, HashSet<UUID>> entry : map.entrySet()) {
+                writer.write(entry.getKey() + "," + entry.getValue().toString());
+                writer.newLine();
+            }
+
+        } catch (IOException e) {
+            System.err.println("Error writing to the CSV file: " + e.getMessage());
+        }
     }
 
     private void processDocument(Document doc) {

@@ -83,7 +83,7 @@ public class Lexicon {
         return statistics;
     }
 
-    public void saveLexiconToCsv(String filePath) {
+    public void saveToCsv(String filePath) {
         Map<String, Integer> map = getSortedTermFrequencies();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             // Write the CSV headers
