@@ -36,6 +36,17 @@ public class CoreNlpTokenizer implements Tokenizer {
         return tokens;
     }
 
+    @Override
+    public String normalize(String text) {
+        text = preprocessText(text);
+        if (!text.isBlank()) {
+            CoreDocument coreDocument = new CoreDocument(text);
+            pipeline.annotate(coreDocument);
+            return coreDocument.tokens().getFirst().word();
+        }
+        return text;
+    }
+
     private String preprocessText(String text) {
         text = text.replaceAll("\\p{Punct}", "");
         return text.toLowerCase();

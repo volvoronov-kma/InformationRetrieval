@@ -7,18 +7,29 @@ import org.kma.processing.Tokenizer;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class InvertedIndex {
+public class InvertedIndex implements SearchStructure {
 
     private final Corpus corpus;
     private final Tokenizer tokenizer;
     private final Map<String, Integer> termFrequencies;
-    private final Map<String, HashSet<UUID>> mappings;
+    private final Map<String, HashSet<UUID>> postings;
 
     public InvertedIndex(Corpus corpus, Tokenizer tokenizer) {
         this.corpus = corpus;
         this.tokenizer = tokenizer;
         termFrequencies = new ConcurrentHashMap<>();
-        mappings = new ConcurrentHashMap<>();
+        postings = new ConcurrentHashMap<>();
+    }
+
+    @Override
+    public Set<UUID> findByTerm(String term) {
+        term = tokenizer.normalize(term);
+        return postings.getOrDefault(term, new HashSet<>());
+    }
+    
+    @Override
+    public Set<String> getAllTerms() {
+        return postings.keySet();
     }
 
     public void readCorpus() {
@@ -37,12 +48,12 @@ public class InvertedIndex {
     private void processDocument(Document doc) {
         List<String> tokens = tokenizer.tokenize(doc);
         addTerms(tokens);
-        addMappings(tokens, doc);
+        addPostings(tokens, doc);
     }
 
-    private void addMappings(List<String> tokens, Document document) {
+    private void addPostings(List<String> tokens, Document document) {
         tokens.parallelStream().forEach(
-                token -> mappings.computeIfAbsent(
+                token -> postings.computeIfAbsent(
                         token, k -> new HashSet<>())
                         .add(document.getDocumentId()));
     }
