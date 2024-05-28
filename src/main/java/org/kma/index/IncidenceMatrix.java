@@ -11,9 +11,7 @@ public class IncidenceMatrix {
     private final Corpus corpus;
     private final Tokenizer tokenizer;
     private final Map<UUID, Integer> docIndices;
-    private final Map<String, List<Boolean>> matrix;
-    private final Set<String> vocabulary;
-    private final Map<UUID, Set<String>> docVocabularies;
+    private final Map<String, BitSet> matrix;
 
 
     public IncidenceMatrix(Corpus corpus, Tokenizer tokenizer) {
@@ -21,14 +19,11 @@ public class IncidenceMatrix {
         this.tokenizer = tokenizer;
         matrix = new ConcurrentHashMap<>();
         docIndices = new ConcurrentHashMap<>();
-        vocabulary = new HashSet<>();
-        docVocabularies = new ConcurrentHashMap<>();
     }
 
-    public Map<String, List<Boolean>> getIncidenceMatrix() {
+    public Map<String, BitSet> getIncidenceMatrix() {
         if (matrix.isEmpty()) {
             enumerateDocuments();
-            buildVocabulary();
             buildIncidenceMatrix();
         }
         return matrix;
@@ -44,26 +39,10 @@ public class IncidenceMatrix {
 
     private void buildIncidenceMatrix() {
         int vectorSize = docIndices.size();
-        vocabulary.forEach(token -> {
-                    ArrayList<Boolean> list = new ArrayList<>(vectorSize);
-                    corpus.getAllDocuments().forEach(doc -> {
-                        int index = docIndices.get(doc.getDocumentId());
-                        if (docVocabularies.get(doc.getDocumentId()).contains(token)) {
-                            list.add(index, true);
-                        } else {
-                            list.add(index, false);
-                        }
-                    });
-                    matrix.put(token, list);
-                }
-        );
-    }
-
-    private void buildVocabulary() {
-        corpus.getAllDocuments().forEach(doc -> {
-            Set<String> tokens = new HashSet<>(tokenizer.tokenize(doc));
-            docVocabularies.putIfAbsent(doc.getDocumentId(), tokens);
-            vocabulary.addAll(tokens);
+        corpus.getAllDocuments().parallelStream().forEach(d -> {
+            var tokens = tokenizer.tokenize(d);
+            tokens.forEach(t -> matrix.computeIfAbsent(t, k ->
+                    new BitSet(vectorSize)).set(docIndices.get(d.getDocumentId())));
         });
     }
 }
