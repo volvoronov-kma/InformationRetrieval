@@ -1,7 +1,9 @@
 package org.kma.search.query;
 
+import org.kma.index.IncidenceMatrix;
 import org.kma.index.SearchStructure;
 
+import java.util.BitSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -21,5 +23,16 @@ public class OrQuery implements BooleanQuery {
         Set<UUID> rightResult = right.evaluate(searchStructure);
         leftResult.addAll(rightResult);
         return leftResult;
+    }
+
+    @Override
+    public BitSet evaluate(IncidenceMatrix incidenceMatrix) {
+        BitSet leftResult = left.evaluate(incidenceMatrix);
+        BitSet rightResult = right.evaluate(incidenceMatrix);
+
+        BitSet bitSet = (BitSet) leftResult.clone();
+        bitSet.or(rightResult);
+
+        return bitSet;
     }
 }

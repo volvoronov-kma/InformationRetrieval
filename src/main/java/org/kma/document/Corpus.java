@@ -30,6 +30,10 @@ public class Corpus {
         return this.documents.values();
     }
 
+    public int size() {
+        return this.documents.size();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
