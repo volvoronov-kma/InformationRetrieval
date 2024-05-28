@@ -50,11 +50,8 @@ public class Lexicon {
     }
 
     public void addDocument(Document doc) {
-        // logger.info("Adding document: " + doc.getDocumentId());
         corpus.addDocument(doc);
         processDocument(doc);
-        // logger.info("Finished processing document: " + doc.getDocumentId());
-
     }
 
     public Map<String, Integer> getSortedTermFrequencies() {
@@ -86,7 +83,7 @@ public class Lexicon {
         return statistics;
     }
 
-    public void saveLexiconToCsv(String filePath) {
+    public void saveToCsv(String filePath) {
         Map<String, Integer> map = getSortedTermFrequencies();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
             // Write the CSV headers

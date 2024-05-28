@@ -2,6 +2,7 @@ package org.kma.processing;
 
 import edu.stanford.nlp.pipeline.CoreDocument;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.util.PropertiesUtils;
 import org.kma.document.Document;
 
 import java.util.ArrayList;
@@ -12,8 +13,12 @@ public class CoreNlpTokenizer implements Tokenizer {
     private final StanfordCoreNLP pipeline;
 
     public CoreNlpTokenizer() {
-        Properties props = new Properties();
-        props.setProperty("annotators", "tokenize,ssplit,pos,lemma");
+        Properties props = PropertiesUtils.asProperties(
+                "annotators", "tokenize,ssplit,mwt,pos,lemma",
+                "ssplit.isOneSentence", "true",
+                "tokenize.whitespace", "true"
+        );
+
         this.pipeline = new StanfordCoreNLP(props);
     }
 
@@ -21,10 +26,29 @@ public class CoreNlpTokenizer implements Tokenizer {
     public List<String> tokenize(Document document) {
         List<String> tokens = new ArrayList<>();
         document.getTextChunks().forEach(chunk -> {
-            CoreDocument coreDocument = new CoreDocument(chunk);
-            pipeline.annotate(coreDocument);
-            coreDocument.tokens().forEach(token -> tokens.add(token.word()));
+            chunk = preprocessText(chunk);
+            if (!chunk.isBlank()) {
+                CoreDocument coreDocument = new CoreDocument(chunk);
+                pipeline.annotate(coreDocument);
+                coreDocument.tokens().forEach(token -> tokens.add(token.word()));
+            }
         });
         return tokens;
+    }
+
+    @Override
+    public String normalize(String text) {
+        text = preprocessText(text);
+        if (!text.isBlank()) {
+            CoreDocument coreDocument = new CoreDocument(text);
+            pipeline.annotate(coreDocument);
+            return coreDocument.tokens().getFirst().word();
+        }
+        return text;
+    }
+
+    private String preprocessText(String text) {
+        text = text.replaceAll("\\p{Punct}", "");
+        return text.toLowerCase();
     }
 }

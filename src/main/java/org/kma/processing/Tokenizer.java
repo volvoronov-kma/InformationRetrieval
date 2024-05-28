@@ -7,4 +7,5 @@ import java.util.List;
 public interface Tokenizer {
 
     public List<String> tokenize(Document document);
+    public String normalize(String text);
 }
