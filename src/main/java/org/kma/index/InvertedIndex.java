@@ -57,7 +57,7 @@ public class InvertedIndex implements SearchStructure {
 
             // Write the key-value pairs
             for (Map.Entry<String, HashSet<UUID>> entry : map.entrySet()) {
-                writer.write(entry.getKey() + "," + entry.getValue().toString());
+                writer.write(entry.getKey() + ", \"" + entry.getValue().toString() + "\"");
                 writer.newLine();
             }
 
