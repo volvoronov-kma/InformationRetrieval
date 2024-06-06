@@ -1,9 +1,6 @@
 package org.kma.document;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Corpus {
@@ -27,7 +24,11 @@ public class Corpus {
     }
 
     public Collection<Document> getAllDocuments() {
-        return this.documents.values();
+        return new HashSet<>(this.documents.values());
+    }
+
+    public Set<UUID> getAllDocumentIds() {
+        return new HashSet<>(this.documents.keySet());
     }
 
     public int size() {

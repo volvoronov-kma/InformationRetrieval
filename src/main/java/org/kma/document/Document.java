@@ -8,15 +8,20 @@ import java.util.UUID;
 public class Document {
     private final List<String> textChunks;
     private final UUID docId;
+    private final String title;
 
-    public Document(String text) {
+    public Document(String text, String title) {
         docId = UUID.randomUUID();
+        title = title.trim();
+        this.title = title;
         textChunks = new ArrayList<>();
         textChunks.add(text);
     }
 
-    public Document(List<String> chunks) {
+    public Document(List<String> chunks, String title) {
         docId = UUID.randomUUID();
+        title = title.trim();
+        this.title = title;
         textChunks = chunks;
     }
 
@@ -26,6 +31,10 @@ public class Document {
 
     public UUID getDocumentId() {
         return docId;
+    }
+
+    public String getTitle() {
+        return title;
     }
 
     @Override

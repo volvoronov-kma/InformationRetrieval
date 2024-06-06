@@ -5,6 +5,8 @@ import org.kma.document.Document;
 import org.kma.document.reading.TxtDocumentReader;
 import org.kma.index.IncidenceMatrix;
 import org.kma.index.InvertedIndex;
+import org.kma.index.domain.NGramOrder;
+import org.kma.processing.BiWordTokenizer;
 import org.kma.processing.CoreNlpTokenizer;
 import org.kma.search.parser.BooleanExpressionParser;
 import org.kma.search.query.BooleanQuery;
@@ -15,52 +17,80 @@ import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
-        String QUERY_SIMPLE = "Cleopatra AND Caesar";
-        String QUERY_COMPLEX = "(Denmark OR CLEOPATRA) OR Venice";
-        BooleanExpressionParser parser = new BooleanExpressionParser();
-        BooleanQuery simple = parser.parse(QUERY_SIMPLE);
-        BooleanQuery complex = parser.parse(QUERY_COMPLEX);
+//        "Here comes the phrase" - phrasal search is invoked via putting a request in quotes
+        String QUERY_SIMPLE = "\"Whose worst was that the noble Mortimer\"";
+        String QUERY_COMPLEX = "\"To be or not to be\"";
+
+
+
+
+
 
         TxtDocumentReader reader = new TxtDocumentReader();
-        InvertedIndex index = new InvertedIndex(new Corpus(), new CoreNlpTokenizer());
 
         File dir = new File("src/main/resources/documents");
+
         try {
+            BooleanExpressionParser parser = new BooleanExpressionParser(BooleanExpressionParser.ParserType.POSITIONAL);
+            BooleanQuery simple = parser.parse(QUERY_SIMPLE);
+            BooleanQuery complex = parser.parse(QUERY_COMPLEX);
+
             long start = System.currentTimeMillis();
 
             List<Document> docs = reader.readAll(Arrays.stream(Objects.requireNonNull(dir.listFiles())).toList());
+            InvertedIndex index = new InvertedIndex(new Corpus(), new CoreNlpTokenizer());
             index.addDocuments(docs);
 
             var simpleResult = simple.evaluate(index);
             var complexResult = complex.evaluate(index);
 
+            List<String> simpleNames = new ArrayList<>();
+            List<String> complexNames = new ArrayList<>();
+
+            simpleResult.forEach(
+                    result -> simpleNames.add(index.getCorpus().getDocument(result).getTitle())
+            );
+            complexResult.forEach(
+                    result -> complexNames.add(index.getCorpus().getDocument(result).getTitle())
+            );
+
             long end = System.currentTimeMillis();
-            index.saveToCsv("results/index.csv");
-            System.out.println("Index Simple Query " + simpleResult.toString());
-            System.out.println("Index Complex Query " + complexResult.toString());
+            System.out.println("Positional Index Simple Query " + simpleNames);
+            System.out.println("Positional Index Complex Query " + complexNames);
             System.out.println("Total time (index): " + (end - start) + "ms");
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         try {
+            BooleanExpressionParser parser = new BooleanExpressionParser(BooleanExpressionParser.ParserType.NGRAM);
+            parser.setnGramOrder(NGramOrder.BIGRAM);
+            BooleanQuery simple = parser.parse(QUERY_SIMPLE);
+            BooleanQuery complex = parser.parse(QUERY_COMPLEX);
+
             long start = System.currentTimeMillis();
 
             List<Document> docs = reader.readAll(Arrays.stream(Objects.requireNonNull(dir.listFiles())).toList());
-            Corpus corpus = new Corpus();
-            corpus.addDocuments(docs);
-            IncidenceMatrix matrix = new IncidenceMatrix(corpus, new CoreNlpTokenizer());
-            matrix.getOrComputeIncidenceMatrix();
+            InvertedIndex index = new InvertedIndex(new Corpus(), new BiWordTokenizer());
+            index.addDocuments(docs);
 
-            var simpleResult = matrix.getDocumentsByBitSet(simple.evaluate(matrix));
-            var complexResult = matrix.getDocumentsByBitSet(complex.evaluate(matrix));
+            var simpleResult = simple.evaluate(index);
+            var complexResult = complex.evaluate(index);
+
+            List<String> simpleNames = new ArrayList<>();
+            List<String> complexNames = new ArrayList<>();
+
+            simpleResult.forEach(
+                    result -> simpleNames.add(index.getCorpus().getDocument(result).getTitle())
+            );
+            complexResult.forEach(
+                    result -> complexNames.add(index.getCorpus().getDocument(result).getTitle())
+            );
 
             long end = System.currentTimeMillis();
-            matrix.saveToCsv("results/matrix.csv");
-            System.out.println("Matrix Simple Query " + simpleResult.toString());
-            System.out.println("Matrix Complex Query " + complexResult.toString());
-            System.out.println("Total time (matrix): " + (end - start) + "ms");
-
+            System.out.println("Biword Index Simple Query " + simpleNames);
+            System.out.println("Biword Index Complex Query " + complexNames);
+            System.out.println("Total time (index): " + (end - start) + "ms");
         } catch (IOException e) {
             e.printStackTrace();
         }

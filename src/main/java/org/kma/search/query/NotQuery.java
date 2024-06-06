@@ -18,10 +18,7 @@ public class NotQuery implements BooleanQuery {
 
     @Override
     public Set<UUID> evaluate(SearchStructure searchStructure) {
-        Set<UUID> allDocs = new HashSet<>();
-        for (String term : searchStructure.getAllTerms()) {
-            allDocs.addAll(searchStructure.findByTerm(term));
-        }
+        Set<UUID> allDocs = searchStructure.getAllDocIds();
         Set<UUID> queryResult = query.evaluate(searchStructure);
         allDocs.removeAll(queryResult);
         return allDocs;

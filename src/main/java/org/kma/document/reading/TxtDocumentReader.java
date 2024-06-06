@@ -12,7 +12,7 @@ public class TxtDocumentReader implements DocumentReader {
     @Override
     public Document read(File file) throws IOException {
         List<String> lines = Files.readAllLines(file.toPath());
-        return new Document(lines);
+        return new Document(lines, file.getName());
     }
 
     @Override

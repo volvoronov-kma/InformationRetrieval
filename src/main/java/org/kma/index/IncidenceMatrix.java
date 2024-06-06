@@ -105,4 +105,8 @@ public class IncidenceMatrix {
                     new BitSet(vectorSize)).set(uuidToIndex.get(d.getDocumentId())));
         });
     }
+
+    public Corpus getCorpus() {
+        return corpus;
+    }
 }
